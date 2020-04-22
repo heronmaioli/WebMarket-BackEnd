@@ -9,10 +9,10 @@ routes.get('/auth', async (req, res) => {
   const _id = req.headers.userid
   const userData = await userCad.findOne(_id)
 
-  if (auth == null) return res.send({ error: 'Não há um token' })
+  if (auth == null) return res.send({ status: false })
 
   jwt.verify(auth, TOKEN.secret, (err, decoded) => {
-    if (err) return res.send({ error: 'Token inválido' })
+    if (err) return res.send({ status: false })
     res.send({ status: true, userData })
   })
 })
@@ -82,7 +82,7 @@ routes.post('/createUser', async (req, res) => {
 
 routes.post('/login', async (req, res) => {
   const { email, password } = req.body
-  const userData = await userCad.userDataOne({ email })
+  const userData = await userCad.findOne({ email })
 
   if (userData === null) return res.send(false)
   if (userData.password !== password) return res.send(false)
