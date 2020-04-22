@@ -24,6 +24,28 @@ routes.get('/products', async (req, res) => {
   return res.json(products)
 })
 
+// LISTAR TODOS OS PRODUTOS
+
+routes.get('/productinfo', async (req, res) => {
+  const id = req.body
+  const product = await Product.findOne(id)
+  return res.send(product)
+})
+
+// ROTA DE MAIS VENDIDOS
+
+routes.get('/bestproducts', async (req, res) => {
+  const products = await Product.find().sort({ buyed: -1 })
+  return res.json(products)
+})
+
+// ROTA DE MAIS POPULARES
+
+routes.get('/popularproducts', async (req, res) => {
+  const products = await Product.find().sort({ clicks: -1 })
+  return res.json(products)
+})
+
 // CRIAR UM NOVO PRODUTO
 
 routes.post('/createProduct', async (req, res) => {
