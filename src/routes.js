@@ -4,14 +4,16 @@ const userCad = require('./models/users')
 const jwt = require('jsonwebtoken')
 const TOKEN = require('./config/auth.json')
 
-routes.get('/auth/products', async (req, res) => {
+routes.get('/auth', async (req, res) => {
   const auth = req.headers.authorization
+  const _id = req.headers.userid
+  const userData = await userCad.findOne(_id)
 
   if (auth == null) return res.send({ error: 'Não há um token' })
 
   jwt.verify(auth, TOKEN.secret, (err, decoded) => {
     if (err) return res.send({ error: 'Token inválido' })
-    return res.send(true)
+    res.send({ status: true, userData })
   })
 })
 
@@ -78,21 +80,21 @@ routes.post('/createUser', async (req, res) => {
   return res.json(newUser)
 })
 
-routes.post('/auth', async (req, res) => {
+routes.post('/login', async (req, res) => {
   const { email, password } = req.body
-  const find = await userCad.findOne({ email })
+  const userData = await userCad.userDataOne({ email })
 
-  if (find === null) return res.send(false)
-  if (find.password !== password) return res.send(false)
+  if (userData === null) return res.send(false)
+  if (userData.password !== password) return res.send(false)
 
   const token = jwt.sign(
-    { id: find.email, user: find.password },
+    { id: userData.email, user: userData.password },
     TOKEN.secret,
     {
       expiresIn: 84600
     }
   )
-  ;(find.password = undefined), res.send({ token })
+  ;(userData.password = undefined), res.send({ token, userData })
 })
 
 module.exports = routes
