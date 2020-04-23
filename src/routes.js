@@ -4,6 +4,13 @@ const userCad = require('./models/users')
 const jwt = require('jsonwebtoken')
 const TOKEN = require('./config/auth.json')
 
+routes.put('/wish', async (req, res) => {
+  console.log(req.body)
+  res.send('deu boa')
+})
+
+// VERIFICAÇÃO DE AUTENTICAÇÃO
+
 routes.get('/auth', async (req, res) => {
   const auth = req.headers.authorization
   const _id = req.headers.userid
@@ -13,7 +20,7 @@ routes.get('/auth', async (req, res) => {
 
   jwt.verify(auth, TOKEN.secret, (err, decoded) => {
     if (err) return res.send({ status: false })
-    res.send({ status: true, userData })
+    return (userData.password = undefined), res.send({ status: true, userData })
   })
 })
 
