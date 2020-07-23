@@ -7,7 +7,22 @@ const userSchema = new mongoose.Schema({
   email: String,
   cellphone: Number,
   password: String,
-  type: String
+  type: String,
+  cart: [
+    {
+      productId: String,
+      amount: Number,
+      addDate: String
+    }
+  ],
+  buyed: [
+    {
+      shopId: String,
+      productId: String,
+      amount: Number
+    }
+  ],
+  whishlist: [{ productId: String, addDate: String }]
 })
 
 module.exports = mongoose.model('userCad', userSchema)
