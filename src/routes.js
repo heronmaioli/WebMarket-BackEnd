@@ -1,25 +1,63 @@
 const routes = require('express').Router()
 const Product = require('./models/product')
 const userCad = require('./models/users')
+const buyed = require('./models/buyed')
+const cart = require('./models/cart')
+const wishlist = require('./models/wishlist')
 const jwt = require('jsonwebtoken')
 const TOKEN = require('./config/auth.json')
 
+//RENDERIZAR LISTA DE DESEJOS
+
+routes.post('/wishlist', async (req, res) => {
+  const _id = req.body._id
+  const list = await wishlist.findOne({ userId: _id })
+  list && res.send(list)
+})
+
+// ADICIONAR A LISTA DE DESEJOS
+
 routes.put('/wish', async (req, res) => {
+  const _id = req.body.id // cliente
+  const wish = req.body.wish // objeto para adicionar
+  const list = await wishlist.findOne({ userId: _id }) //acha cliente
+
+  const createList = async () => {
+    await wishlist.create({
+      userId: _id,
+      products: wish
+    })
+  }
+
+  const add = async () => {
+    if (
+      list.products.findIndex(
+        produto => produto.productId === wish.productId
+      ) === -1
+    ) {
+      await wishlist.updateOne(
+        { userId: _id },
+        { products: [...list.products, wish] }
+      )
+
+      return res.send('o Produto foi adicionado à sua Lista de Desejos')
+    }
+    return res.send('Este produto já está em sua Lista de Desejos!')
+  }
+  !list ? createList() : add()
   console.log(req.body)
-  res.send('deu boa')
 })
 
 // VERIFICAÇÃO DE AUTENTICAÇÃO
 
 routes.get('/auth', async (req, res) => {
   const auth = req.headers.authorization
-  const _id = req.headers.userid
-  const userData = await userCad.findOne(_id)
 
   if (auth == null) return res.send({ status: false })
 
-  jwt.verify(auth, TOKEN.secret, (err, decoded) => {
+  jwt.verify(auth, TOKEN.secret, async (err, decoded) => {
     if (err) return res.send({ status: false })
+    const userData = await userCad.findOne({ _id: decoded.id })
     return (userData.password = undefined), res.send({ status: true, userData })
   })
 })
@@ -117,7 +155,7 @@ routes.post('/login', async (req, res) => {
   if (userData.password !== password) return res.send(false)
 
   const token = jwt.sign(
-    { id: userData.email, user: userData.password },
+    { id: userData._id, email: userData.email, user: userData.password },
     TOKEN.secret,
     {
       expiresIn: 84600
